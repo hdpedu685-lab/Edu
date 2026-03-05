@@ -1,0 +1,193 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light mode variables */
+  --primary: #a62a26;
+  --text: #000000;
+}
+
+html, body, #__next { height: 100%; }
+* { box-sizing: border-box; }
+
+/* Light mode background */
+html {
+  background-image: url('/bg-course.png');
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+body {
+  color: var(--text);
+}
+
+/* primary color accessible via CSS var */
+:root { --primary-color: var(--primary); }
+
+/* Links and UI elements */
+a { color: var(--primary-color); }
+button { font-family: inherit; }
+
+/* Dark theme overrides (next-themes uses `dark` class on <html>) */
+.dark {
+  --primary: #000814; /* very deep blue */
+  --text: #ffffff;
+}
+
+/* Dark mode background - overrides light mode */
+.dark {
+  background-image: url('/dark-mode.png') !important;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.dark body {
+  color: var(--text);
+}
+
+/* Dark mode dashboard card styling */
+.dark [data-slot="card"] {
+  background-color: #000814 !important;
+  color: #ffffff !important;
+  border-color: rgba(0, 61, 153, 0.4) !important;
+}
+
+.dark .bg-white {
+  background-color: #000814 !important;
+  color: #ffffff !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300 {
+  color: #ffffff !important;
+}
+
+.dark .border-gray-200,
+.dark .border-gray-100,
+.dark .border-gray-300,
+.dark .border-gray-400 {
+  border-color: rgba(0, 61, 153, 0.4) !important;
+}
+
+.dark .bg-gradient-to-br.from-gray-50,
+.dark .bg-gradient-to-br.from-gray-100 {
+  background: linear-gradient(to bottom right, #001a4d, #000814) !important;
+  border-color: rgba(0, 61, 153, 0.4) !important;
+}
+
+.dark .from-slate-900,
+.dark .to-slate-800 {
+  background-color: #000814 !important;
+}
+
+/* Additional text color fixes for dark mode cards */
+.dark [data-slot="card"] * {
+  color: #ffffff !important;
+}
+
+.dark [data-slot="card"] svg {
+  color: inherit;
+}
+
+/* Dashboard hero section dark mode */
+.dark section {
+  background: linear-gradient(to bottom right, rgba(0, 8, 20, 0.9), rgba(0, 26, 77, 0.9)) !important;
+  border-color: rgba(0, 61, 153, 0.3) !important;
+}
+
+.dark h2 {
+  color: #ffffff !important;
+}
+
+.dark h1 {
+  color: #ffffff !important;
+}
+
+.dark p {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Dashboard section titles */
+.dark .text-2xl {
+  color: #ffffff !important;
+}
+
+/* Progress bar and activity items in dark mode */
+.dark .bg-gray-200 {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.dark .border-b {
+  border-color: rgba(0, 61, 153, 0.4) !important;
+}
+
+.dark .border-gray-100 {
+  border-color: rgba(0, 61, 153, 0.4) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: rgba(0, 26, 77, 0.6) !important;
+}
+
+.dark .bg-gradient-to-br.from-blue-50 {
+  background: linear-gradient(to bottom right, rgba(0, 61, 153, 0.4), rgba(0, 26, 77, 0.4)) !important;
+  border-color: rgba(59, 130, 246, 0.5) !important;
+}
+
+.dark .bg-gradient-to-br.from-green-50 {
+  background: linear-gradient(to bottom right, rgba(16, 185, 129, 0.2), rgba(34, 197, 94, 0.2)) !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
+.dark .bg-gradient-to-br.from-purple-50 {
+  background: linear-gradient(to bottom right, rgba(147, 51, 234, 0.2), rgba(168, 85, 247, 0.2)) !important;
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+.dark .bg-gradient-to-br.from-orange-50 {
+  background: linear-gradient(to bottom right, rgba(251, 146, 60, 0.2), rgba(249, 115, 22, 0.2)) !important;
+  border-color: rgba(249, 115, 22, 0.4) !important;
+}
+
+.dark .bg-gradient-to-br.from-amber-50 {
+  background: linear-gradient(to bottom right, rgba(251, 191, 36, 0.2), rgba(234, 179, 8, 0.2)) !important;
+  border-color: rgba(234, 179, 8, 0.4) !important;
+}
+
+/* Light colored backgrounds in dark mode */
+.dark .bg-blue-100,
+.dark .bg-amber-100,
+.dark .bg-emerald-100,
+.dark .bg-purple-100,
+.dark .bg-green-100,
+.dark .bg-orange-100 {
+  background-color: rgba(0, 61, 153, 0.3) !important;
+  color: #ffffff !important;
+}
+
+.dark .text-blue-700,
+.dark .text-amber-700,
+.dark .text-emerald-700,
+.dark .text-purple-700,
+.dark .text-green-700,
+.dark .text-orange-700 {
+  color: #ffffff !important;
+}
+
+/* Some helpful defaults used across components */
+:root {
+  --border: rgba(0,0,0,0.06);
+}
+.dark { --border: rgba(255,255,255,0.06); }
+
+

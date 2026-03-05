@@ -1,0 +1,11 @@
+_generated/
+_generated/**
+.tmp/
+.tmp/**
+node_modules/
+node_modules/**
+*.tsbuildinfo
+*.tsbuildinfo.json
+dist/
+build/
+.DS_Store
