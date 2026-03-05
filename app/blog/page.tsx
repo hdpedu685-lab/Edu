@@ -1,7 +1,5 @@
 "use client"
 
-export const dynamic = 'force-dynamic'
-
 import { useRef, useEffect, useCallback, useState } from "react"
 import { usePaginatedQuery, useMutation } from "convex/react"
 import { api } from "@/convex/_generated/api"
@@ -163,7 +161,7 @@ function FallbackFeed({
         id: "self",
         name: displayName,
         username: displayName.toLowerCase().replace(/\s+/g, "."),
-        avatar: "",
+        avatarUrl: "",
         role: "Student",
         bio: "Community member",
         subjects: [],
