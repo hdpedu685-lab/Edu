@@ -99,7 +99,7 @@ export function NavigationHeader() {
           ) : isAuthenticated ? (
             <Link href="/dashboard">
               <Button 
-                className="bg-background/50 text-[#A62A26] hover:bg-background/80 font-semibold px-5 py-2 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                className="bg-white dark:bg-blue-500 text-slate-900 dark:text-white hover:bg-gray-100 dark:hover:bg-blue-600 font-semibold px-5 py-2 rounded-full transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
               >
                 <LayoutDashboard className="w-4 h-4" />
                 {displayName || "Dashboard"}

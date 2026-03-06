@@ -11,11 +11,13 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/language-context";
 import { useConvexReady, useConvexProbing } from "@/app/ConvexClientProvider";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/user-context";
 
 
 /* ── Real Auth Form ── */
 function RealAuthForm() {
   const router = useRouter();
+  const { refreshAuth } = useUser();
   
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -72,10 +74,13 @@ function RealAuthForm() {
       const result = await response.json();
 
       if (result.success) {
-        // Success! Redirect to dashboard
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 100);
+        // Keep client auth state in sync immediately, then navigate.
+        refreshAuth();
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("auth-state-changed"));
+        }
+        router.replace(result.redirect || "/dashboard");
+        router.refresh();
       } else {
         setError(result.error || "Authentication failed");
         setLoading(false);

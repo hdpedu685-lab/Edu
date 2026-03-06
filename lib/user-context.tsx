@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { User } from "./types"
@@ -15,6 +15,7 @@ interface UserContextType {
   purchaseCourse: (courseId: string) => void
   hasCourseAccess: (courseId: string) => boolean
   signOut: () => Promise<void>
+  refreshAuth: () => void
   // Corrected to accept a File object for the profile picture
   updateProfile: (data: { displayName?: string; bio?: string; avatarFile?: File }) => Promise<void>
 }
@@ -27,19 +28,37 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [cookieAuth, setCookieAuth] = useState<string | null>(null)
 
+  const refreshAuth = useCallback(() => {
+    if (typeof document === "undefined") return
+
+    const authCookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("auth_session="))
+
+    const email = authCookie ? decodeURIComponent(authCookie.split("=")[1] ?? "") : null
+    setCookieAuth(email || null)
+  }, [])
+
   useEffect(() => {
-    // Check for auth cookie on mount
-    if (typeof document !== "undefined") {
-      const authCookie = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("auth_session="));
-      
-      if (authCookie) {
-        const email = authCookie.split("=")[1];
-        setCookieAuth(email);
-      }
+    // Initial auth check and client-side sync hooks (login/logout in other tabs, etc.)
+    refreshAuth()
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") refreshAuth()
     }
-  }, []);
+    const handleFocus = () => refreshAuth()
+    const handleAuthChanged = () => refreshAuth()
+
+    document.addEventListener("visibilitychange", handleVisibility)
+    window.addEventListener("focus", handleFocus)
+    window.addEventListener("auth-state-changed", handleAuthChanged)
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility)
+      window.removeEventListener("focus", handleFocus)
+      window.removeEventListener("auth-state-changed", handleAuthChanged)
+    }
+  }, [refreshAuth])
 
   useEffect(() => {
     // After first render, mark initial load as done
@@ -69,9 +88,12 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     // Clear the auth cookie
     if (typeof document !== "undefined") {
-      document.cookie = "auth_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+      document.cookie = "auth_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
     }
-    setCookieAuth(null);
+    setCookieAuth(null)
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new Event("auth-state-changed"))
+    }
     
     // Redirect to home page after sign out
     window.location.href = "/"
@@ -98,6 +120,7 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
         isInitialLoad,
         purchaseCourse,
         hasCourseAccess,
+        refreshAuth,
         updateProfile,
         signOut,
       }}
