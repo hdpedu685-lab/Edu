@@ -1,8 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
 import { User } from "./types"
 import { mockUser } from "./data"
 
@@ -23,8 +21,6 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 function ConvexUserProvider({ children }: { children: ReactNode }) {
-  // Query current user - will be null if not authenticated
-  const currentUser = useQuery(api.users.currentUser)
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [cookieAuth, setCookieAuth] = useState<string | null>(null)
 
@@ -61,23 +57,13 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
   }, [refreshAuth])
 
   useEffect(() => {
-    // After first render, mark initial load as done
-    if (currentUser !== undefined || cookieAuth) {
-      setIsInitialLoad(false)
-    }
-  }, [currentUser, cookieAuth])
+    // Finish initial hydration pass after first mount/auth refresh.
+    setIsInitialLoad(false)
+  }, [])
 
-  // Determine if user is authenticated based on cookie or currentUser
-  const isAuthenticated = cookieAuth !== null || (currentUser !== null && currentUser !== undefined)
+  const isAuthenticated = cookieAuth !== null
   
-  const user: User & { avatarUrl?: string } = currentUser
-    ? {
-        name: currentUser.displayName || "User",
-        email: currentUser.email || cookieAuth || "",
-        coursesPurchased: [],
-        avatarUrl: currentUser.avatarUrl || undefined,
-      }
-    : cookieAuth
+  const user: User & { avatarUrl?: string } = cookieAuth
     ? {
         name: cookieAuth.split("@")[0],
         email: cookieAuth,
@@ -116,7 +102,7 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         isAuthenticated,
-        isLoading: currentUser === undefined && !cookieAuth,
+        isLoading: isInitialLoad,
         isInitialLoad,
         purchaseCourse,
         hasCourseAccess,
