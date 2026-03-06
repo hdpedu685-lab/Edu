@@ -29,8 +29,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/lib/language-context";
 import { useUser } from "@/lib/user-context";
 import { courses } from "@/lib/data";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -40,9 +38,10 @@ export default function DashboardPage() {
   const { language, t } = useLanguage();
   const { user, isAuthenticated, isLoading, signOut } = useUser();
   const router = useRouter();
-  
-  // Query current user's profile (from users module) to get username
-  const currentUserProfile = useQuery(api.users.currentUser);
+
+  // Safe profile link fallback that does not depend on Convex during prerender.
+  const profileUsername = user?.email?.split("@")[0] || "";
+  const canEditProfile = profileUsername.length > 0;
   
   // Track if we have ever loaded data once to avoid "flicker"
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
@@ -82,8 +81,8 @@ export default function DashboardPage() {
   };
 
   const handleEditProfile = () => {
-    if (currentUserProfile?.username) {
-      router.push(`/u/${currentUserProfile.username}`);
+    if (canEditProfile) {
+      router.push(`/u/${profileUsername}`);
     }
   };
 
@@ -188,7 +187,7 @@ export default function DashboardPage() {
                             </Button>
                             <Button
                               onClick={handleEditProfile}
-                              disabled={!currentUserProfile}
+                              disabled={!canEditProfile}
                               className="bg-white text-[#a62a26] hover:bg-gray-100 font-semibold"
                             >
                               <Edit2 className="mr-2 h-4 w-4" />
