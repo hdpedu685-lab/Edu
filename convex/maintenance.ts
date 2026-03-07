@@ -15,6 +15,7 @@ export const cleanupLegacyAuthAndBlogData = mutation({
     const dryRun = args.dryRun ?? true;
 
     const users = (await ctx.db.query("users").collect()) as AnyDoc[];
+    const authAccounts = (await ctx.db.query("authAccounts").collect()) as AnyDoc[];
     const profiles = (await ctx.db.query("profiles").collect()) as AnyDoc[];
     const posts = (await ctx.db.query("posts").collect()) as AnyDoc[];
     const postLikes = (await ctx.db.query("postLikes").collect()) as AnyDoc[];
@@ -26,8 +27,10 @@ export const cleanupLegacyAuthAndBlogData = mutation({
     const postIds = new Set(posts.map((p) => String(p._id)));
     const commentIds = new Set(postComments.map((c) => String(c._id)));
 
-    // Suspicious users are legacy rows that do not contain Convex Auth token identity.
-    const malformedUsers = users.filter((u) => !u.tokenIdentifier);
+    // A users row is suspicious for this project if it has no auth account mapped.
+    // This catches legacy fallback users inserted outside Convex Auth flows.
+    const authUserIds = new Set(authAccounts.map((a) => String(a.userId)));
+    const malformedUsers = users.filter((u) => !authUserIds.has(String(u._id)));
     const malformedUserIds = new Set(malformedUsers.map((u) => String(u._id)));
 
     // Keep the oldest profile per userId and mark later duplicates for deletion.
@@ -83,6 +86,7 @@ export const cleanupLegacyAuthAndBlogData = mutation({
       dryRun,
       totals: {
         users: users.length,
+        authAccounts: authAccounts.length,
         profiles: profiles.length,
         posts: posts.length,
         postLikes: postLikes.length,
@@ -175,6 +179,100 @@ export const cleanupLegacyAuthAndBlogData = mutation({
     }
     for (const doc of malformedUsers) {
       if (await deleteOnce(String(doc._id))) deleted.malformedUsers++;
+    }
+
+    return {
+      ...summary,
+      deleted,
+    };
+  },
+});
+
+export const repairAuthTableIntegrity = mutation({
+  args: {
+    dryRun: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const dryRun = args.dryRun ?? true;
+
+    const users = (await ctx.db.query("users").collect()) as AnyDoc[];
+    const authSessions = (await ctx.db.query("authSessions").collect()) as AnyDoc[];
+    const authAccounts = (await ctx.db.query("authAccounts").collect()) as AnyDoc[];
+    const authRefreshTokens = (await ctx.db.query("authRefreshTokens").collect()) as AnyDoc[];
+    const authVerificationCodes = (await ctx.db.query("authVerificationCodes").collect()) as AnyDoc[];
+    const authVerifiers = (await ctx.db.query("authVerifiers").collect()) as AnyDoc[];
+
+    const userIds = new Set(users.map((u) => String(u._id)));
+    const sessionIds = new Set(authSessions.map((s) => String(s._id)));
+    const accountIds = new Set(authAccounts.map((a) => String(a._id)));
+    const refreshTokenIds = new Set(authRefreshTokens.map((t) => String(t._id)));
+
+    const orphanSessions = authSessions.filter((s) => !userIds.has(String(s.userId)));
+    const orphanAccounts = authAccounts.filter((a) => !userIds.has(String(a.userId)));
+    const orphanRefreshTokens = authRefreshTokens.filter(
+      (t) =>
+        !sessionIds.has(String(t.sessionId)) ||
+        (t.parentRefreshTokenId && !refreshTokenIds.has(String(t.parentRefreshTokenId)))
+    );
+    const orphanVerificationCodes = authVerificationCodes.filter(
+      (c) => !accountIds.has(String(c.accountId))
+    );
+    const orphanVerifiers = authVerifiers.filter(
+      (v) => v.sessionId && !sessionIds.has(String(v.sessionId))
+    );
+
+    const summary = {
+      dryRun,
+      totals: {
+        users: users.length,
+        authSessions: authSessions.length,
+        authAccounts: authAccounts.length,
+        authRefreshTokens: authRefreshTokens.length,
+        authVerificationCodes: authVerificationCodes.length,
+        authVerifiers: authVerifiers.length,
+      },
+      candidates: {
+        orphanSessions: orphanSessions.length,
+        orphanAccounts: orphanAccounts.length,
+        orphanRefreshTokens: orphanRefreshTokens.length,
+        orphanVerificationCodes: orphanVerificationCodes.length,
+        orphanVerifiers: orphanVerifiers.length,
+      },
+      sampleOrphanAccountIds: orphanAccounts.slice(0, 10).map((a) => String(a._id)),
+    };
+
+    if (dryRun) return summary;
+
+    const deleted = {
+      orphanVerificationCodes: 0,
+      orphanRefreshTokens: 0,
+      orphanVerifiers: 0,
+      orphanSessions: 0,
+      orphanAccounts: 0,
+    };
+
+    const deletedIds = new Set<string>();
+    const deleteOnce = async (id: string) => {
+      if (deletedIds.has(id)) return false;
+      await ctx.db.delete(id as any);
+      deletedIds.add(id);
+      return true;
+    };
+
+    for (const doc of orphanVerificationCodes) {
+      if (await deleteOnce(String(doc._id))) deleted.orphanVerificationCodes++;
+    }
+    for (const doc of orphanRefreshTokens) {
+      if (await deleteOnce(String(doc._id))) deleted.orphanRefreshTokens++;
+    }
+    for (const doc of orphanVerifiers) {
+      if (await deleteOnce(String(doc._id))) deleted.orphanVerifiers++;
+    }
+    for (const doc of orphanSessions) {
+      if (await deleteOnce(String(doc._id))) deleted.orphanSessions++;
+    }
+    for (const doc of orphanAccounts) {
+      if (await deleteOnce(String(doc._id))) deleted.orphanAccounts++;
     }
 
     return {
