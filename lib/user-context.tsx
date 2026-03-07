@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
 import { User } from "./types"
 import { mockUser } from "./data"
-import { useAuthToken } from "@convex-dev/auth/react"
+import { useAuthActions, useAuthToken } from "@convex-dev/auth/react"
 
 
 interface UserContextType {
@@ -24,7 +24,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 function ConvexUserProvider({ children }: { children: ReactNode }) {
   const [isInitialLoad, setIsInitialLoad] = useState(true)
   const [cookieAuth, setCookieAuth] = useState<string | null>(null)
+  const [hasExplicitSignOut, setHasExplicitSignOut] = useState(false)
   const authToken = useAuthToken()
+  const { signOut: convexSignOut } = useAuthActions()
 
   const refreshAuth = useCallback(() => {
     if (typeof document === "undefined") return
@@ -63,7 +65,13 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
     setIsInitialLoad(false)
   }, [])
 
-  const isAuthenticated = !!authToken || cookieAuth !== null
+  useEffect(() => {
+    if (authToken || cookieAuth) {
+      setHasExplicitSignOut(false)
+    }
+  }, [authToken, cookieAuth])
+
+  const isAuthenticated = !hasExplicitSignOut && (!!authToken || cookieAuth !== null)
   
   const user: User & { avatarUrl?: string } = cookieAuth
     ? {
@@ -71,9 +79,23 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
         email: cookieAuth,
         coursesPurchased: [],
       }
-    : mockUser
+    : isAuthenticated
+      ? {
+          // Keep a neutral user object during auth-token/cookie sync windows.
+          name: "",
+          coursesPurchased: [],
+        }
+      : mockUser
 
   const signOut = async () => {
+    setHasExplicitSignOut(true)
+
+    try {
+      await convexSignOut()
+    } catch (error) {
+      console.warn("Convex signOut failed:", error)
+    }
+
     // Clear the auth cookie
     if (typeof document !== "undefined") {
       document.cookie = "auth_session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
@@ -82,9 +104,6 @@ function ConvexUserProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       window.dispatchEvent(new Event("auth-state-changed"))
     }
-    
-    // Redirect to home page after sign out
-    window.location.href = "/"
   }
 
   const purchaseCourse = (_id: string) => {
