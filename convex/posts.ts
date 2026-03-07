@@ -4,6 +4,33 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import type { Doc, Id } from "./_generated/dataModel";
 
+async function resolveActorUserId(
+  ctx: any,
+  fallbackEmail?: string,
+  fallbackName?: string
+): Promise<Id<"users"> | null> {
+  try {
+    const authUserId = (await getAuthUserId(ctx)) as Id<"users"> | null;
+    if (authUserId) return authUserId;
+  } catch {
+    // Ignore and try fallback identity.
+  }
+
+  const email = (fallbackEmail || "").trim().toLowerCase();
+  if (!email) return null;
+
+  const existing = await ctx.db
+    .query("users")
+    .filter((q: any) => q.eq(q.field("email"), email))
+    .first();
+  if (existing?._id) return existing._id;
+
+  return (await ctx.db.insert("users", {
+    email,
+    name: (fallbackName || email.split("@")[0] || "User").trim(),
+  })) as Id<"users">;
+}
+
 /* ── Helper: enrich posts with author profile + like data ── */
 async function enrichPost(
   ctx: { db: Doc<"posts">["_id"] extends never ? never : any },
@@ -108,9 +135,11 @@ export const create = mutation({
     content: v.string(),
     mediaUrl: v.optional(v.string()),
     mediaType: v.optional(v.union(v.literal("image"), v.literal("video"))),
+    authorEmail: v.optional(v.string()),
+    authorName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await resolveActorUserId(ctx, args.authorEmail, args.authorName);
     if (!userId) throw new Error("Not authenticated");
 
     return await ctx.db.insert("posts", {
@@ -126,9 +155,13 @@ export const create = mutation({
  * Toggle like on a post. If already liked, removes the like.
  */
 export const toggleLike = mutation({
-  args: { postId: v.id("posts") },
+  args: {
+    postId: v.id("posts"),
+    actorEmail: v.optional(v.string()),
+    actorName: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await resolveActorUserId(ctx, args.actorEmail, args.actorName);
     if (!userId) throw new Error("Not authenticated");
 
     const existing = await ctx.db
@@ -153,9 +186,13 @@ export const toggleLike = mutation({
 
 // record a share action and optionally repost to feed
 export const sharePost = mutation({
-  args: { postId: v.id("posts") },
+  args: {
+    postId: v.id("posts"),
+    actorEmail: v.optional(v.string()),
+    actorName: v.optional(v.string()),
+  },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
+    const userId = await resolveActorUserId(ctx, args.actorEmail, args.actorName);
     if (!userId) throw new Error("Not authenticated");
 
     const existing = await ctx.db
@@ -192,23 +229,11 @@ export const addComment = mutation({
   args: {
     postId: v.id("posts"),
     content: v.string(),
+    actorEmail: v.optional(v.string()),
+    actorName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Convex auth normally exposes the user id via `getAuthUserId`, but when
-    // integrating with third-party providers like Clerk the identity lives on
-    // `ctx.auth.getUserIdentity()`.  In either case we need the **_id of the
-    // document in the built-in `users` table** so that subsequent lookups of the
-    // profile/author work correctly.
-    let userId: Id<"users"> | null = null;
-
-    try {
-      userId = (await getAuthUserId(ctx)) as Id<"users">;
-    } catch {}
-
-    if (!userId) {
-      const identity = await ctx.auth.getUserIdentity();
-      userId = identity?.userId as Id<"users"> | null;
-    }
+    const userId = await resolveActorUserId(ctx, args.actorEmail, args.actorName);
 
     if (!userId) throw new Error("Not authenticated");
 

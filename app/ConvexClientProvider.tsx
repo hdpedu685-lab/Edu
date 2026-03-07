@@ -4,8 +4,6 @@ import {
   ReactNode,
   createContext,
   useContext,
-  useState,
-  useEffect,
   useMemo,
 } from "react";
 import { ConvexReactClient, ConvexProvider } from "convex/react";
@@ -22,9 +20,6 @@ export const useConvexProbing = () => useContext(ConvexProbingContext);
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
 export function ConvexClientProvider({ children }: { children: ReactNode }) {
-  // Default to development mode, confirm on client side
-  const [isDevMode, setIsDevMode] = useState(true);
-
   // Memoize the client so it's only created once
   const convex = useMemo(() => {
     if (convexUrl && convexUrl.startsWith("https://")) {
@@ -38,41 +33,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
-  // Confirm development status after mounting
-  useEffect(() => {
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    setIsDevMode(isLocalhost);
-  }, []);
-
-  // In development mode (localhost), always show app as ready
-  if (isDevMode) {
-    if (convex) {
-      return (
-        <ConvexProvider client={convex}>
-          <ConvexProbingContext value={false}>
-            <ConvexAuthAvailableContext value={false}>
-              <ConvexReadyContext value={true}>
-                {children}
-              </ConvexReadyContext>
-            </ConvexAuthAvailableContext>
-          </ConvexProbingContext>
-        </ConvexProvider>
-      );
-    } else {
-      // No convex URL, but in development - still show app as ready
-      return (
-        <ConvexProbingContext value={false}>
-          <ConvexAuthAvailableContext value={false}>
-            <ConvexReadyContext value={true}>
-              {children}
-            </ConvexReadyContext>
-          </ConvexAuthAvailableContext>
-        </ConvexProbingContext>
-      );
-    }
-  }
-
-  // Production mode: show normal provider
+  // Convex-enabled mode.
   if (convex) {
     return (
       <ConvexProvider client={convex}>
@@ -87,7 +48,7 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
     );
   }
 
-  // Offline mode
+  // No Convex URL/client available.
   return (
     <ConvexProbingContext value={false}>
       <ConvexAuthAvailableContext value={false}>

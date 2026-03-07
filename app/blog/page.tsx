@@ -46,9 +46,11 @@ function convexPostToBlogPost(post: any): BlogPost {
 function ConvexFeed({
   displayName,
   isAuthenticated,
+  userEmail,
 }: {
   displayName: string
   isAuthenticated: boolean
+  userEmail?: string
 }) {
   const {
     results: convexPosts,
@@ -79,6 +81,8 @@ function ConvexFeed({
         content: data.content,
         mediaUrl: data.media_url,
         mediaType: data.media_type,
+        authorEmail: userEmail,
+        authorName: displayName,
       })
     } catch (err) {
       console.warn("Failed to create post:", err)
@@ -90,7 +94,11 @@ function ConvexFeed({
   const handleLike = async (postId: string) => {
     if (!isAuthenticated) return
     try {
-      await toggleLikeMut({ postId: postId as any })
+      await toggleLikeMut({
+        postId: postId as any,
+        actorEmail: userEmail,
+        actorName: displayName,
+      })
     } catch (err) {
       console.warn("Failed to toggle like:", err)
     }
@@ -242,6 +250,7 @@ export default function BlogPage() {
   const { user, isAuthenticated, isLoading: authLoading } = useUser()
   const convexReady = useConvexReady()
   const displayName = user.name || user.email?.split("@")[0] || "Guest"
+  const userEmail = user.email || ""
   const isLoading = authLoading
 
   const showAuthGate = !authLoading && !isAuthenticated
@@ -280,7 +289,11 @@ export default function BlogPage() {
 
           <div className="min-w-0 flex-1">
             {!isLoading && convexReady ? (
-              <ConvexFeed displayName={displayName} isAuthenticated={isAuthenticated} />
+              <ConvexFeed
+                displayName={displayName}
+                isAuthenticated={isAuthenticated}
+                userEmail={userEmail}
+              />
             ) : (
               <FallbackFeed displayName={displayName} isAuthenticated={isAuthenticated} />
             )}
