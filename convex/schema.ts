@@ -56,4 +56,13 @@ export default defineSchema({
   })
     .index("by_comment", ["commentId"])
     .index("by_user_comment", ["userId", "commentId"]),
+
+  registrations: defineTable({
+    name: v.string(),
+    phone: v.string(),
+    address: v.string(),
+    message: v.optional(v.string()),
+    sourcePath: v.optional(v.string()),
+    submittedAt: v.number(),
+  }).index("by_submittedAt", ["submittedAt"]),
 });

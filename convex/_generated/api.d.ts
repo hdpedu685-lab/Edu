@@ -14,6 +14,7 @@ import type * as http from "../http.js";
 import type * as maintenance from "../maintenance.js";
 import type * as posts from "../posts.js";
 import type * as profiles from "../profiles.js";
+import type * as registrations from "../registrations.js";
 import type * as users from "../users.js";
 
 import type {
@@ -29,6 +30,7 @@ declare const fullApi: ApiFromModules<{
   maintenance: typeof maintenance;
   posts: typeof posts;
   profiles: typeof profiles;
+  registrations: typeof registrations;
   users: typeof users;
 }>;
 

@@ -42,13 +42,27 @@ export default function RegisterFormPage() {
           phone: form.phone,
           address: form.address,
           message: form.message,
+          sourcePath: "/publication/register-form",
         }),
       });
-      if (!emailRes.ok) throw new Error("Email failed");
+
+      const emailData = await emailRes.json().catch(() => ({}));
+      if (!emailRes.ok) {
+        const apiError =
+          typeof emailData?.error === "string" && emailData.error
+            ? emailData.error
+            : "Email failed";
+        throw new Error(apiError);
+      }
+
       router.push("/publication/registration-confirmed");
     } catch (err) {
       console.error(err);
-      setError("Có lỗi xảy ra, vui lòng thử lại sau.");
+      const message =
+        err instanceof Error && err.message
+          ? err.message
+          : "Có lỗi xảy ra, vui lòng thử lại sau.";
+      setError(message);
     } finally {
       setLoading(false);
     }
