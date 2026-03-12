@@ -13,6 +13,15 @@ function isProdAppHost(host: string | null | undefined) {
   return PROD_APP_HOSTS.has(normalizeHost(host));
 }
 
+function isLocalHost(host: string | null | undefined) {
+  const normalized = normalizeHost(host);
+  return normalized === "localhost" || normalized === "127.0.0.1" || normalized === "0.0.0.0";
+}
+
+function isHostedProductionRuntime(host: string | null | undefined) {
+  return process.env.NODE_ENV === "production" && !isLocalHost(host);
+}
+
 export function resolveConvexCloudUrl(opts?: {
   host?: string | null;
   fallbackToDev?: boolean;
@@ -21,6 +30,11 @@ export function resolveConvexCloudUrl(opts?: {
 
   // Enforce production Convex when serving the production web domain.
   if (isProdAppHost(opts?.host)) {
+    return PROD_CONVEX_CLOUD_URL;
+  }
+
+  // On deployed production runtimes, always pin to prod Convex.
+  if (isHostedProductionRuntime(opts?.host)) {
     return PROD_CONVEX_CLOUD_URL;
   }
 
@@ -42,6 +56,11 @@ export function resolveConvexCloudUrlForBrowser() {
 
 export function resolveConvexSiteUrl() {
   const configured = process.env.CONVEX_SITE_URL ?? process.env.NEXT_PUBLIC_CONVEX_SITE_URL;
+
+  if (isHostedProductionRuntime(null)) {
+    return PROD_CONVEX_SITE_URL;
+  }
+
   if (configured && configured.startsWith("https://")) {
     return configured;
   }
