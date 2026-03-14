@@ -25,7 +25,7 @@ import { resolveConvexCloudUrlForBrowser } from "@/lib/convex-env";
  * Token storage key format (from @convex-dev/auth/react):
  *   `${keyName}_${namespace.replace(/[^a-zA-Z0-9]/g, "")}`
  */
-const AUTH_STORAGE_VERSION = "v3"; // bump this whenever cached Convex auth state must be invalidated
+const AUTH_STORAGE_VERSION = "v4"; // bumped after JWKS fix (was invalid JSON) — forces fresh sign-in
 
 function getAuthStorageNamespace(convexUrl: string) {
   return `${convexUrl}::${AUTH_STORAGE_VERSION}`;
