@@ -88,6 +88,25 @@ export default function PublicationPage() {
       ? "Cuốn sách thực chiến dành riêng cho môi trường sản xuất – giúp bạn hiểu quy trình, thuật ngữ, bối cảnh giao tiếp và tự tin làm việc với quản lý."
       : "제조 환경을 위한 실전 도서 - 프로세스, 용어, 의사소통 맥락을 이해하고 관리자와 자신 있게 일하세요.";
 
+  const promoContent =
+    language === "vi"
+      ? {
+          stock: "Còn đúng 74 cuốn",
+          stockAria: "Stock remaining 13%",
+          urgency: "🔥 Đợt in đầu đang gần hết",
+          listPrice: "Giá Bìa: 250.000đ",
+          salePrice: "💰 Giá Bán: 225.000đ",
+          discount: "🎁 Giảm 10% !!!",
+        }
+      : {
+          stock: "단 74권 남음",
+          stockAria: "재고 13% 남음",
+          urgency: "🔥 초판 재고가 거의 소진되었습니다",
+          listPrice: "정가: 250,000đ",
+          salePrice: "💰 판매가: 225,000đ",
+          discount: "🎁 10% 할인 !!!",
+        };
+
   return (
     // The background images are handled by globals.css body styles, 
     // but we use a wrapper to ensure the theme colors apply.
@@ -115,6 +134,26 @@ export default function PublicationPage() {
                 >
                   {bookSubtitle}
                 </motion.p>
+
+                <div className="mt-6 max-w-md rounded-2xl border border-[#ffd8cf] bg-[#fff5f2] p-5 md:p-6 shadow-[0_12px_28px_rgba(166,42,38,0.12)] dark:border-[#7a3027]/70 dark:bg-[#2a1613]/95 dark:shadow-[0_16px_32px_rgba(0,0,0,0.45)]">
+                  <p className="text-lg md:text-xl font-extrabold text-[#a62a26] dark:text-[#ffd2c7]">{promoContent.stock}</p>
+
+                  <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-[#f4c6b8] dark:bg-[#5e3028]">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-[#dc2626] to-[#f97316]"
+                      style={{ width: "13%" }}
+                      aria-label={promoContent.stockAria}
+                    />
+                  </div>
+
+                  <p className="mt-2 text-sm md:text-base font-semibold text-[#b9382f] dark:text-[#ffb09f]">{promoContent.urgency}</p>
+
+                  <div className="mt-5 space-y-1">
+                    <p className="text-base md:text-lg text-gray-500 line-through dark:text-gray-400">{promoContent.listPrice}</p>
+                    <p className="text-3xl md:text-4xl font-black tracking-tight text-[#a62a26] dark:text-[#ffcfbf]">{promoContent.salePrice}</p>
+                    <p className="text-sm md:text-base font-semibold text-[#d9480f] dark:text-[#ffb387]">{promoContent.discount}</p>
+                  </div>
+                </div>
 
                 <div className="mt-8">
                   <Button
