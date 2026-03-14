@@ -219,10 +219,3 @@ export default function RegisterFormPage() {
     </div>
   );
 }
-            <p className="text-sm text-gray-600">0869010169</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
