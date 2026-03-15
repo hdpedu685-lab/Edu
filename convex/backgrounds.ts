@@ -35,8 +35,11 @@ export const getAvailableBackgrounds = query({
 
     if (!userId) return normalBackgrounds;
 
-    const user = await ctx.db.get(userId);
-    const role = String((user as any)?.role || "student").toLowerCase();
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    const role = String(profile?.role || "student").toLowerCase();
 
     if (role === "expert") {
       return [...normalBackgrounds, ...vipBackgrounds];

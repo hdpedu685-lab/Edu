@@ -34,7 +34,6 @@ export default function ProfilePage() {
   const [selectedBackground, setSelectedBackground] = useState<string>("");
 
   const generateUploadUrl = useMutation(api.users.generateUploadUrl);
-  const updateBackgroundImage = useMutation(api.users.updateBackgroundImage);
   const username = (params?.username as string) || "";
 
   // Only query the profile when we have a valid username
@@ -143,6 +142,7 @@ export default function ProfilePage() {
         bio: formData.bio.trim(),
         subjects: subjectsArray,
         avatarId,
+        backgroundImage: selectedBackground,
       });
 
       // Await the mutation to ensure it completes before proceeding
@@ -151,14 +151,8 @@ export default function ProfilePage() {
         bio: formData.bio.trim() || undefined,
         subjects: subjectsArray.length > 0 ? subjectsArray : undefined,
         avatarId: avatarId ? (avatarId as any) : undefined,
+        backgroundImage: selectedBackground || undefined,
       });
-
-      if (
-        selectedBackground &&
-        selectedBackground !== (((profile as any)?.backgroundImage as string | undefined) || "")
-      ) {
-        await updateBackgroundImage({ backgroundImage: selectedBackground });
-      }
       
       console.log("Mutation result received:", result);
 

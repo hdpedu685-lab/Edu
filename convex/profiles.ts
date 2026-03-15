@@ -8,7 +8,6 @@ import { v } from "convex/values";
  * This is the single source of truth for profile resolution.
  */
 async function resolveProfile(ctx: any, profile: any) {
-  const authUser = await ctx.db.get(profile.userId);
   let avatarUrl = profile.avatarUrl;
   if (profile.avatarId) {
     const storageUrl = await ctx.storage.getUrl(profile.avatarId);
@@ -23,7 +22,7 @@ async function resolveProfile(ctx: any, profile: any) {
     avatarUrl: avatarUrl || null,
     bio: profile.bio || "",
     role: profile.role || null,
-    backgroundImage: (authUser as any)?.backgroundImage || null,
+    backgroundImage: profile.backgroundImage || null,
     subjects: profile.subjects || [],
     _creationTime: profile._creationTime,
   };
@@ -50,7 +49,7 @@ export const getByUsername = query({
 /**
  * Update a profile by the authenticated user.
  * Verifies that auth.getUserId(ctx) matches the profile's userId.
- * Handles displayName, bio, subjects, and avatarId.
+ * Handles displayName, bio, subjects, avatarId, and backgroundImage.
  * When avatarId is provided, immediately generates and saves the URL.
  */
 export const updateProfile = mutation({
@@ -59,6 +58,7 @@ export const updateProfile = mutation({
     bio: v.optional(v.string()),
     subjects: v.optional(v.array(v.string())),
     avatarId: v.optional(v.id("_storage")),
+    backgroundImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -96,6 +96,13 @@ export const updateProfile = mutation({
         throw new Error("Subjects must be an array");
       }
       updateData.subjects = args.subjects;
+    }
+
+    if (args.backgroundImage !== undefined) {
+      if (args.backgroundImage !== "" && !args.backgroundImage.startsWith("/profile-bg/")) {
+        throw new Error("Invalid background image path");
+      }
+      updateData.backgroundImage = args.backgroundImage || undefined;
     }
 
     // Handle avatar: generate URL immediately and save to avatarUrl field
@@ -161,6 +168,7 @@ export const upsertProfile = mutation({
     avatarId: v.optional(v.id("_storage")),
     avatarUrl: v.optional(v.string()),
     role: v.optional(v.string()),
+    backgroundImage: v.optional(v.string()),
     subjects: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -191,6 +199,7 @@ export const upsertProfile = mutation({
       avatarId: args.avatarId,
       avatarUrl: avatarUrl,
       ...(args.role && { role: args.role }),
+      ...(args.backgroundImage && { backgroundImage: args.backgroundImage }),
       ...(args.subjects && { subjects: args.subjects }),
     };
 

@@ -51,7 +51,7 @@ export const currentUser = query({
         avatarUrl: avatarUrl || null,
         bio: profile.bio || "",
         email: user?.email ?? null,
-        backgroundImage: (user as any)?.backgroundImage ?? null,
+        backgroundImage: profile.backgroundImage || null,
       };
     }
 
@@ -59,30 +59,7 @@ export const currentUser = query({
     return {
       displayName: null,
       email: user?.email ?? null,
-      backgroundImage: (user as any)?.backgroundImage ?? null,
-    };
-  },
-});
-
-export const updateBackgroundImage = mutation({
-  args: {
-    backgroundImage: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    if (!args.backgroundImage.startsWith("/profile-bg/")) {
-      throw new Error("Invalid background image path");
-    }
-
-    await ctx.db.patch(userId, {
-      backgroundImage: args.backgroundImage,
-    } as any);
-
-    return {
-      ok: true,
-      backgroundImage: args.backgroundImage,
+      backgroundImage: null,
     };
   },
 });
