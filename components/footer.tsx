@@ -2,9 +2,15 @@
 
 import { MapPin, Mail, Phone } from "lucide-react"
 import { useLanguage } from "@/lib/language-context"
+import { usePathname } from "next/navigation"
 
 export default function Footer() {
   const { language } = useLanguage()
+  const pathname = usePathname()
+
+  if (pathname === "/blog" || pathname.startsWith("/blog/") || pathname.startsWith("/u/")) {
+    return null
+  }
 
   const content =
     language === "vi"

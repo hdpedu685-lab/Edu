@@ -291,33 +291,6 @@ export default function ProfilePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600" />
         )}
         <div className="absolute inset-0 bg-black/30" />
-
-        {isOwnProfile && (
-          <>
-            <input
-              id="cover-upload"
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  void handleCoverPhotoUpload(file);
-                }
-                e.currentTarget.value = "";
-              }}
-            />
-            <Button
-              type="button"
-              disabled={isUploadingCover}
-              onClick={() => document.getElementById("cover-upload")?.click()}
-              className="absolute bottom-4 right-4 bg-black/60 hover:bg-black/70 border border-white/20 text-white"
-            >
-              <Camera className="w-4 h-4 mr-2" />
-              {isUploadingCover ? "Uploading..." : "Change cover photo"}
-            </Button>
-          </>
-        )}
       </div>
 
       {/* Profile Header */}
@@ -407,6 +380,47 @@ export default function ProfilePage() {
                           </Button>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Cover Upload Section */}
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-700/30 rounded-xl p-6 border border-slate-600/50 backdrop-blur">
+                      <Label className="text-sm font-semibold text-slate-200 block mb-3">
+                        Cover Photo
+                      </Label>
+                      <p className="text-xs text-slate-500 mb-3">JPG, PNG or GIF (Max 5MB)</p>
+                      <div className="relative h-32 rounded-lg overflow-hidden border border-slate-600 bg-slate-700/50 mb-4">
+                        {(profile as any).coverImage ? (
+                          <div
+                            className="absolute inset-0 bg-cover bg-center"
+                            style={{ backgroundImage: `url(${(profile as any).coverImage})` }}
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600" />
+                        )}
+                        <div className="absolute inset-0 bg-black/30" />
+                      </div>
+                      <input
+                        id="cover-upload-dialog"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            void handleCoverPhotoUpload(file);
+                          }
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        disabled={isUploadingCover}
+                        onClick={() => document.getElementById("cover-upload-dialog")?.click()}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white w-full"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        {isUploadingCover ? "Uploading..." : "Upload cover photo"}
+                      </Button>
                     </div>
 
                     {/* Form Fields Section */}
