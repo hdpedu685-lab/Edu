@@ -7,20 +7,13 @@ export const canCreateClassroomByEmail = query({
     const email = args.email.trim().toLowerCase();
     if (!email) return false;
 
-    // Auth users table comes from convex auth tables.
-    const users = await ctx.db.query("users").collect();
-    const user = users.find((item: any) => {
-      const candidate = String(item?.email || "").toLowerCase();
-      return candidate === email;
-    });
+    const user = await ctx.db
+      .query("users")
+      .withIndex("email", (q) => q.eq("email", email))
+      .first();
 
     if (!user) return false;
 
-    const profile = await ctx.db
-      .query("profiles")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .first();
-
-    return String(profile?.role || "").trim().toLowerCase() === "expert";
+    return String((user as any).role || "").trim().toLowerCase() === "expert";
   },
 });

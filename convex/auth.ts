@@ -30,6 +30,11 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         return;
       }
 
+      // Default role for all new accounts in users table.
+      await (ctx.db as any).patch(userId, {
+        role: "Knowledge Seeker",
+      });
+
       // Use the name from the auth user, fallback to email prefix, never just "Student"
       const name = user?.name && user.name !== "Student" 
         ? user.name 
@@ -43,7 +48,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
         userId,
         displayName: name,
         username,
-        role: "Student",
+        role: "Knowledge Seeker",
         subjects: [],
       });
     },
