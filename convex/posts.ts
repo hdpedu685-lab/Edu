@@ -157,6 +157,34 @@ export const list = query({
 });
 
 /**
+ * List posts for a specific profile page by username.
+ */
+export const listByUsername = query({
+  args: { username: v.string() },
+  handler: async (ctx, args) => {
+    const currentUserId = await getAuthUserId(ctx).catch(() => null);
+
+    const profile = await ctx.db
+      .query("profiles")
+      .withIndex("by_username", (q) => q.eq("username", args.username))
+      .unique();
+
+    if (!profile) return [];
+
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_userId", (q) => q.eq("userId", profile.userId))
+      .collect();
+
+    const sorted = posts.sort((a, b) => b._creationTime - a._creationTime);
+
+    return await Promise.all(
+      sorted.map((post) => enrichPost(ctx, post, currentUserId))
+    );
+  },
+});
+
+/**
  * Create a new blog post. Requires authentication.
  */
 export const create = mutation({
