@@ -4,8 +4,6 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { ArrowRight, PlusSquare, Radio, Users, Clock3, DoorOpen } from 'lucide-react'
 import { useLanguage } from '@/lib/language-context'
-import { useQuery } from 'convex/react'
-import { api } from '@/convex/_generated/api'
 
 type LiveRoom = {
   roomID: string
@@ -53,11 +51,10 @@ const copy = {
 
 export default function ClassroomListPage() {
   const { language } = useLanguage()
-  const backendUser = useQuery(api.users.currentUser)
   const [streamingRooms, setStreamingRooms] = useState<LiveRoom[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [canCreateClassroom, setCanCreateClassroom] = useState(false)
   const text = copy[language]
-  const isExpert = String((backendUser as any)?.role || '').toLowerCase() === 'expert'
 
   useEffect(() => {
     async function loadRooms() {
@@ -77,6 +74,26 @@ export default function ClassroomListPage() {
     }
 
     loadRooms()
+  }, [])
+
+  useEffect(() => {
+    async function loadPermission() {
+      try {
+        const response = await fetch('/api/classrooms/can-create', { cache: 'no-store' })
+        const data = (await response.json()) as {
+          ok?: boolean
+          canCreate?: boolean
+        }
+
+        if (data.ok) {
+          setCanCreateClassroom(Boolean(data.canCreate))
+        }
+      } catch {
+        setCanCreateClassroom(false)
+      }
+    }
+
+    loadPermission()
   }, [])
 
   return (
@@ -101,7 +118,7 @@ export default function ClassroomListPage() {
                 >
                   {text.back}
                 </Link>
-                {isExpert ? (
+                {canCreateClassroom ? (
                   <Link
                     href="/courses/classroom/createnew"
                     className="inline-flex items-center gap-2 rounded-full bg-[#a62a26] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#8c1f1b] dark:bg-yellow-300 dark:text-slate-950 dark:hover:bg-yellow-200"

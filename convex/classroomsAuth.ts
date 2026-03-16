@@ -21,6 +21,6 @@ export const canCreateClassroomByEmail = query({
       .withIndex("by_userId", (q) => q.eq("userId", user._id))
       .first();
 
-    return String(profile?.role || "").toLowerCase() === "expert";
+    return String(profile?.role || "").trim().toLowerCase() === "expert";
   },
 });
