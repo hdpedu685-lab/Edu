@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, Clock, BookOpen, Star, ArrowRight, Sparkles, Users, TrendingUp, Flame, Bell } from "lucide-react";
+import { Search, Clock, BookOpen, Star, ArrowRight, Sparkles, Users, TrendingUp, Flame, Bell, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -119,6 +119,15 @@ export default function CoursesPage() {
                     {language === "vi" ? category.vi : category.ko}
                   </Button>
                 ))}
+                <Link href="/classroom">
+                  <Button
+                    size="sm"
+                    className="shrink-0 font-semibold bg-yellow-400 text-gray-900 hover:bg-yellow-300 shadow-lg gap-1.5 transition-all duration-300"
+                  >
+                    <Video className="h-4 w-4" />
+                    {language === "vi" ? "Khóa học trực tuyến" : "온라인 수업"}
+                  </Button>
+                </Link>
               </div>
             </div>
             {filteredCourses.length > 0 && (
