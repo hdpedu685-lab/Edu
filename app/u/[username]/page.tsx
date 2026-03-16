@@ -265,17 +265,23 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div
+      className={`relative min-h-screen overflow-x-hidden ${
+        (profile as any).backgroundImage
+          ? "bg-transparent"
+          : "bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
+      }`}
+    >
       {(profile as any).backgroundImage ? (
         <div
-          className="fixed inset-0 -z-20 bg-cover bg-fixed bg-center bg-no-repeat"
+          className="fixed inset-0 z-0 bg-cover bg-fixed bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${(profile as any).backgroundImage})` }}
         />
       ) : null}
-      <div className="fixed inset-0 -z-10 bg-slate-900/75" />
+      <div className={`fixed inset-0 z-0 ${(profile as any).backgroundImage ? "bg-slate-950/45" : "bg-slate-900/75"}`} />
 
       {/* Facebook-style cover banner */}
-      <div className="h-[260px] relative overflow-hidden">
+      <div className="relative z-10 h-[260px] overflow-hidden">
         {(profile as any).coverImage ? (
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -315,7 +321,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Profile Header */}
-      <div className="relative px-4 sm:px-6 lg:px-8 -mt-20 pb-8">
+      <div className="relative z-10 px-4 sm:px-6 lg:px-8 -mt-20 pb-8">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-start md:items-end gap-6">
             <Avatar className="h-40 w-40 ring-4 ring-slate-800 border-4 border-white shadow-2xl flex-shrink-0">
@@ -508,7 +514,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Quick Stats */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-slate-700/50 backdrop-blur rounded-lg p-4 text-center border border-slate-600/50">
             <p className="text-3xl font-bold text-white">5</p>
@@ -526,7 +532,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-16">
         <motion.div variants={containerVariants} initial="hidden" animate="visible" className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">
             <Card className="border-slate-700 bg-slate-800/50 shadow-lg backdrop-blur">
