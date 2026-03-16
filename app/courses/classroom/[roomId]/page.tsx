@@ -25,7 +25,7 @@ export default function ClassroomPage({ params }: Props) {
     <div className="relative h-screen w-screen bg-black overflow-hidden">
       {/* Back link — floats above the iframe */}
       <Link
-        href="/courses"
+        href="/courses/classroom"
         className="absolute top-4 left-4 z-50 flex items-center gap-1.5 rounded-full bg-black/60 px-3 py-1.5 text-sm font-medium text-white backdrop-blur hover:bg-black/80 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />

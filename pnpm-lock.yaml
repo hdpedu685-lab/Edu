@@ -205,6 +205,9 @@ importers:
       '@types/react-dom':
         specifier: ^19.0.0
         version: 19.2.3(@types/react@19.2.14)
+      baseline-browser-mapping:
+        specifier: ^2.10.8
+        version: 2.10.8
       concurrently:
         specifier: ^9.1.0
         version: 9.2.1
@@ -1597,8 +1600,8 @@ packages:
     peerDependencies:
       postcss: ^8.1.0
 
-  baseline-browser-mapping@2.10.0:
-    resolution: {integrity: sha512-lIyg0szRfYbiy67j9KN8IyeD7q7hcmqnJ1ddWmNt19ItGpNN64mnllmxUNFIOdOm6by97jlL6wfpTTJrmnjWAA==}
+  baseline-browser-mapping@2.10.8:
+    resolution: {integrity: sha512-PCLz/LXGBsNTErbtB6i5u4eLpHeMfi93aUv5duMmj6caNu6IphS4q6UevDnL36sZQv9lrP11dbPKGMaXPwMKfQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -3743,7 +3746,7 @@ snapshots:
       postcss: 8.5.8
       postcss-value-parser: 4.2.0
 
-  baseline-browser-mapping@2.10.0: {}
+  baseline-browser-mapping@2.10.8: {}
 
   binary-extensions@2.3.0: {}
 
@@ -3757,7 +3760,7 @@ snapshots:
 
   browserslist@4.28.1:
     dependencies:
-      baseline-browser-mapping: 2.10.0
+      baseline-browser-mapping: 2.10.8
       caniuse-lite: 1.0.30001776
       electron-to-chromium: 1.5.307
       node-releases: 2.0.36
