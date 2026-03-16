@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { liveClassrooms } from '@/lib/classrooms'
-
-const ROOM_PASSWORDS: Record<string, string> = {
-  'hdpedu-live': 'hdp123',
-  'topik-writing-a2': 'topik2026',
-}
+import { verifyRoomPassword } from '@/lib/classrooms-store'
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,16 +18,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const room = liveClassrooms.find((item) => item.id === roomID && item.isLive)
-    if (!room) {
+    const verification = verifyRoomPassword(roomID, password)
+    if (!verification.ok && verification.reason === 'not_found') {
       return NextResponse.json(
         { ok: false, message: 'Phong hoc khong ton tai hoac khong dang live.' },
         { status: 404 },
       )
     }
 
-    const expectedPassword = ROOM_PASSWORDS[roomID]
-    if (!expectedPassword || expectedPassword !== password) {
+    if (!verification.ok && verification.reason === 'wrong_password') {
       return NextResponse.json(
         { ok: false, message: 'Mat khau khong dung.' },
         { status: 401 },

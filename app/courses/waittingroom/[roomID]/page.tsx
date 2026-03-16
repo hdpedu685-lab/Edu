@@ -1,10 +1,9 @@
 'use client'
 
-import { FormEvent, use, useMemo, useState } from 'react'
+import { FormEvent, use, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Lock, ArrowLeft } from 'lucide-react'
-import { liveClassrooms } from '@/lib/classrooms'
 
 interface Props {
   params: Promise<{ roomID: string }>
@@ -13,14 +12,28 @@ interface Props {
 export default function WaitingRoomPage({ params }: Props) {
   const { roomID } = use(params)
   const router = useRouter()
+  const [roomName, setRoomName] = useState('Lop hoc truc tuyen')
   const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  const room = useMemo(
-    () => liveClassrooms.find((item) => item.id === roomID),
-    [roomID],
-  )
+  useEffect(() => {
+    async function fetchRoom() {
+      const response = await fetch('/api/classrooms/live', { cache: 'no-store' })
+      const data = (await response.json()) as {
+        ok?: boolean
+        rooms?: Array<{ roomID: string; name: string }>
+      }
+
+      if (!data.ok || !Array.isArray(data.rooms)) return
+      const currentRoom = data.rooms.find((room) => room.roomID === roomID)
+      if (currentRoom?.name) {
+        setRoomName(currentRoom.name)
+      }
+    }
+
+    fetchRoom()
+  }, [roomID])
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -67,7 +80,7 @@ export default function WaitingRoomPage({ params }: Props) {
         <div className="mt-6 rounded-2xl border border-white/15 bg-white/5 p-6 md:p-8 backdrop-blur">
           <div className="mb-5">
             <p className="text-xs uppercase tracking-wide text-white/60">Waiting Room</p>
-            <h1 className="mt-2 text-2xl font-bold">{room?.title || 'Lop hoc truc tuyen'}</h1>
+            <h1 className="mt-2 text-2xl font-bold">{roomName}</h1>
             <p className="mt-1 text-sm text-white/70">
               Nhap mat khau phong de vao lop hoc.
             </p>
