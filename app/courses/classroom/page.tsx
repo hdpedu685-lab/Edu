@@ -101,21 +101,15 @@ export default function ClassroomListPage() {
                 >
                   {text.back}
                 </Link>
-                <Link
-                  href={isExpert ? '/courses/classroom/createnew' : '#'}
-                  aria-disabled={!isExpert}
-                  onClick={(e) => {
-                    if (!isExpert) e.preventDefault()
-                  }}
-                  className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                    isExpert
-                      ? 'bg-[#a62a26] text-white hover:bg-[#8c1f1b] dark:bg-yellow-300 dark:text-slate-950 dark:hover:bg-yellow-200'
-                      : 'cursor-not-allowed bg-slate-300/70 text-slate-500 dark:bg-white/10 dark:text-white/35'
-                  }`}
-                >
-                  <PlusSquare className="h-4 w-4" />
-                  {text.create}
-                </Link>
+                {isExpert ? (
+                  <Link
+                    href="/courses/classroom/createnew"
+                    className="inline-flex items-center gap-2 rounded-full bg-[#a62a26] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#8c1f1b] dark:bg-yellow-300 dark:text-slate-950 dark:hover:bg-yellow-200"
+                  >
+                    <PlusSquare className="h-4 w-4" />
+                    {text.create}
+                  </Link>
+                ) : null}
               </div>
 
               <div className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#a62a26]/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-[#8c1f1b] dark:bg-red-400/10 dark:text-red-300">
