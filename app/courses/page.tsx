@@ -119,7 +119,7 @@ export default function CoursesPage() {
                     {language === "vi" ? category.vi : category.ko}
                   </Button>
                 ))}
-                <Link href="/classroom">
+                <Link href="/courses/classroom/hdpedu-live">
                   <Button
                     size="sm"
                     className="shrink-0 font-semibold bg-yellow-400 text-gray-900 hover:bg-yellow-300 shadow-lg gap-1.5 transition-all duration-300"
