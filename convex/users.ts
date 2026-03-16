@@ -61,6 +61,7 @@ export const currentUser = query({
         username: profile.username,
         avatarUrl: avatarUrl || null,
         bio: profile.bio || "",
+        role: profile.role || null,
         email: user?.email ?? null,
         coverImage: profile.coverImage || null,
         backgroundImage: profile.backgroundImage || null,
@@ -70,6 +71,7 @@ export const currentUser = query({
     // Return null for displayName so the frontend knows to trigger auto-creation
     return {
       displayName: null,
+      role: null,
       email: user?.email ?? null,
       coverImage: null,
       backgroundImage: null,
