@@ -1,9 +1,11 @@
 'use client'
 
 import { use } from 'react'
+import { useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 // Load the Jitsi component only on the client — the external_api.js script
 // requires a browser environment (window / DOM).
@@ -17,9 +19,48 @@ interface Props {
 
 export default function ClassroomPage({ params }: Props) {
   const { roomId } = use(params)
+  const router = useRouter()
 
   // Full JaaS room name: "<app-id>/<roomId>"
   const roomName = `${JAAS_APP_ID}/${roomId}`
+
+  useEffect(() => {
+    let joined = false
+
+    async function markJoin() {
+      const response = await fetch('/api/classrooms/participation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomID: roomId, action: 'join' }),
+      })
+
+      if (!response.ok) {
+        router.replace('/courses/classroom')
+        return
+      }
+
+      joined = true
+    }
+
+    void markJoin()
+
+    const sendLeave = () => {
+      if (!joined) return
+      void fetch('/api/classrooms/participation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomID: roomId, action: 'leave' }),
+        keepalive: true,
+      })
+    }
+
+    window.addEventListener('beforeunload', sendLeave)
+
+    return () => {
+      window.removeEventListener('beforeunload', sendLeave)
+      sendLeave()
+    }
+  }, [roomId, router])
 
   return (
     <div className="relative h-screen w-screen bg-black overflow-hidden">

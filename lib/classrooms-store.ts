@@ -4,6 +4,8 @@ export interface ClassroomRoom {
   password: string
   isLive: boolean
   createdAt: number
+  participantCount: number
+  emptySince: number | null
 }
 
 declare global {
@@ -18,14 +20,30 @@ const DEFAULT_ROOMS: ClassroomRoom[] = [
     password: 'hdp123',
     isLive: true,
     createdAt: Date.now(),
+    participantCount: 0,
+    emptySince: Date.now(),
   },
 ]
+
+const EMPTY_ROOM_GRACE_MS = 2 * 60 * 1000
 
 function getStore() {
   if (!globalThis.__HDP_CLASSROOM_STORE__) {
     globalThis.__HDP_CLASSROOM_STORE__ = [...DEFAULT_ROOMS]
   }
+  pruneEmptyRooms()
   return globalThis.__HDP_CLASSROOM_STORE__
+}
+
+function pruneEmptyRooms() {
+  if (!globalThis.__HDP_CLASSROOM_STORE__) return
+  const now = Date.now()
+  globalThis.__HDP_CLASSROOM_STORE__ = globalThis.__HDP_CLASSROOM_STORE__.filter((room) => {
+    if (!room.isLive) return false
+    if (room.participantCount > 0) return true
+    if (!room.emptySince) return true
+    return now - room.emptySince < EMPTY_ROOM_GRACE_MS
+  })
 }
 
 export function slugifyRoomName(name: string) {
@@ -43,7 +61,12 @@ export function listLiveRooms() {
   return getStore()
     .filter((room) => room.isLive)
     .sort((a, b) => b.createdAt - a.createdAt)
-    .map((room) => ({ roomID: room.roomID, name: room.name, createdAt: room.createdAt }))
+    .map((room) => ({
+      roomID: room.roomID,
+      name: room.name,
+      createdAt: room.createdAt,
+      participantCount: room.participantCount,
+    }))
 }
 
 export function createRoom(name: string, password: string) {
@@ -77,6 +100,8 @@ export function createRoom(name: string, password: string) {
     password: cleanPassword,
     isLive: true,
     createdAt: Date.now(),
+    participantCount: 0,
+    emptySince: Date.now(),
   }
 
   store.push(room)
@@ -98,4 +123,33 @@ export function verifyRoomPassword(roomID: string, password: string) {
 
 export function getRoom(roomID: string) {
   return getStore().find((item) => item.roomID === roomID && item.isLive) || null
+}
+
+export function joinRoom(roomID: string) {
+  const room = getStore().find((item) => item.roomID === roomID && item.isLive)
+  if (!room) return null
+
+  room.participantCount += 1
+  room.emptySince = null
+  return {
+    roomID: room.roomID,
+    participantCount: room.participantCount,
+  }
+}
+
+export function leaveRoom(roomID: string) {
+  const room = getStore().find((item) => item.roomID === roomID && item.isLive)
+  if (!room) return null
+
+  room.participantCount = Math.max(0, room.participantCount - 1)
+  if (room.participantCount === 0) {
+    room.emptySince = Date.now()
+  }
+
+  pruneEmptyRooms()
+
+  return {
+    roomID: room.roomID,
+    participantCount: room.participantCount,
+  }
 }
